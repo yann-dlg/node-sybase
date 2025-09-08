@@ -14,10 +14,23 @@ import net.minidev.json.JSONValue;
 public class StdInputReader {
 
 	private List<SQLRequestListener> listeners = new ArrayList<SQLRequestListener>();
-	private BufferedReader inputBuffer = new BufferedReader(new InputStreamReader(System.in));
+	private BufferedReader inputBuffer;
 
 	public StdInputReader() {
+		this(null);
+	}
 
+	public StdInputReader(String encoding) {
+		try {
+			if (encoding != null && !encoding.isEmpty()) {
+				inputBuffer = new BufferedReader(new InputStreamReader(System.in, encoding));
+			} else {
+				inputBuffer = new BufferedReader(new InputStreamReader(System.in));
+			}
+		} catch (Exception e) {
+			System.err.println("Error setting encoding '" + encoding + "', falling back to default: " + e.getMessage());
+			inputBuffer = new BufferedReader(new InputStreamReader(System.in));
+		}
 	}
 
 	public void startReadLoop()

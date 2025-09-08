@@ -4,7 +4,7 @@ var fs = require("fs");
 var path = require("path");
 
 
-function Sybase(host, port, dbname, username, password, logTiming, pathToJavaBridge, { encoding = "utf8", extraLogs = false } = {})
+function Sybase(host, port, dbname, username, password, logTiming, pathToJavaBridge, { encoding = "utf8", javaEncoding = null, extraLogs = false } = {})
 {
     this.connected = false;
     this.host = host;
@@ -14,6 +14,7 @@ function Sybase(host, port, dbname, username, password, logTiming, pathToJavaBri
     this.password = password;    
     this.logTiming = (logTiming == true);
     this.encoding = encoding;
+    this.javaEncoding = javaEncoding;
     this.extraLogs = extraLogs;
     
     this.pathToJavaBridge = pathToJavaBridge;
@@ -38,7 +39,15 @@ Sybase.prototype.log = function(msg)
 Sybase.prototype.connect = function(callback)
 {
     var that = this;
-    this.javaDB = spawn('java',["-jar",this.pathToJavaBridge, this.host, this.port, this.dbname, this.username, this.password]);
+    var javaArgs = ["-jar", this.pathToJavaBridge, this.host, this.port, this.dbname, this.username, this.password];
+    
+    // Add Java encoding parameter if specified
+    if (this.javaEncoding) {
+        javaArgs.splice(1, 0, "-Dfile.encoding=" + this.javaEncoding);
+        javaArgs.push(this.javaEncoding); // Pass encoding as additional parameter to Java app
+    }
+    
+    this.javaDB = spawn('java', javaArgs);
 
     var hrstart = process.hrtime();
 	this.javaDB.stdout.once("data", function(data) {

@@ -21,25 +21,32 @@ public class Main implements SQLRequestListener {
 
 		Main m;
 		String pw = "";
-		if (args.length != 5 && args.length != 4)
+		String encoding = null;
+		if (args.length < 4 || args.length > 6)
 		{
-			System.err.println("Expecting the arguments: host, port, dbname, username, password");
+			System.err.println("Expecting the arguments: host, port, dbname, username, [password], [encoding]");
 			System.exit(1);
 		}
-		if (args.length == 5)
+		if (args.length >= 5)
 			pw = args[4];
+		if (args.length == 6)
+			encoding = args[5];
 
-		m = new Main(args[0], Integer.parseInt(args[1]), args[2], args[3], pw);
+		m = new Main(args[0], Integer.parseInt(args[1]), args[2], args[3], pw, encoding);
     }
 
 	public Main(String host, Integer port, String dbname, String username, String password) {
+		this(host, port, dbname, username, password, null);
+	}
+
+	public Main(String host, Integer port, String dbname, String username, String password, String encoding) {
 		this.host = host;
 		this.port = port;
 		this.dbname = dbname;
 		this.username = username;
 		this.password = password;
 
-		input = new StdInputReader();
+		input = new StdInputReader(encoding);
 		input.addListener(this);
 
 		MyProperties props = new MyProperties("sybaseConfig.properties");
