@@ -108,7 +108,14 @@ Sybase.prototype.query = function(sql, callback)
     
     this.currentMessages[msg.msgId] = msg;
 
-    this.javaDB.stdin.write(strMsg + "\n");
+    // 🔥 Patch : encode en latin1/CP1252 au lieu de laisser Node forcer en UTF-8
+    if (this.encoding && this.encoding !== "utf8") {
+        const iconv = require("iconv-lite");
+        const buf = iconv.encode(strMsg + "\n", this.encoding);
+        this.javaDB.stdin.write(buf);
+    } else {
+        this.javaDB.stdin.write(strMsg + "\n");
+    }
     this.log("sql request written: " + strMsg);
 };
 
